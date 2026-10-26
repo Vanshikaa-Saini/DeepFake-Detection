@@ -9,14 +9,21 @@ SEED = 42
 EPOCHS = 3
 BATCH_SIZE = 16
 NUM_WORKERS = 0  # reliable on Windows
-DATA_DIR = Path("data/raw/dfdc_faces/train")
+DATA_DIR = Path("data/train_10k")
 MODEL_DIR = Path("models")
 MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
 random.seed(SEED)
 torch.manual_seed(SEED)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+if torch.cuda.is_available():
+    device = torch.device("cuda")
+elif torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
+
+print("Device:", device)
 print("Device:", device)
 
 if device.type == "cpu":
