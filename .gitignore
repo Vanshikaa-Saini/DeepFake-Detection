@@ -1,0 +1,41 @@
+Python environment
+
+venv/
+.venv/
+pycache/
+*.py[cod]
+
+Datasets and video files
+
+data/
+*.mp4
+*.avi
+*.mov
+*.zip
+
+Model weights
+
+models/
+*.pth
+*.pt
+*.onnx
+
+Outputs
+
+outputs/
+runs/
+
+Secrets
+
+.env
+.env.*
+
+Jupyter
+
+.ipynb_checkpoints/
+
+Editor and OS files
+
+.vscode/
+.DS_Store
+Thumbs.db
