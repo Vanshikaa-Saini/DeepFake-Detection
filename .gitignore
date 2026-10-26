@@ -1,41 +1,61 @@
-Python environment
 
+# Python environment
 venv/
 .venv/
-pycache/
+__pycache__/
 *.py[cod]
 
-Datasets and video files
+# Raw datasets
+data/raw/
+data/raw/**
+data/Raw/
+data/Raw/**
+data/**/raw/
+data/**/raw/**
 
-data/
+# Dataset and video files
 *.mp4
 *.avi
 *.mov
+*.mkv
+*.webm
 *.zip
+*.7z
+*.rar
 
-Model weights
+# Large dataset formats
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pkl
+*.pickle
 
+# Model weights
 models/
 *.pth
 *.pt
 *.onnx
+*.ckpt
+*.safetensors
 
-Outputs
-
+# Generated outputs
 outputs/
 runs/
+logs/
+*.log
 
-Secrets
-
+# Secrets
 .env
 .env.*
+!.env.example
 
-Jupyter
-
+# Jupyter
 .ipynb_checkpoints/
 
-Editor and OS files
-
+# Editor and OS files
 .vscode/
+.idea/
 .DS_Store
 Thumbs.db
+desktop.ini
