@@ -1,45 +1,30 @@
-from pathlib import Path
-import sys
-import torch
-from torch import nn
+import argparse
 from PIL import Image
-from torchvision import transforms, models
+import torch
+from torchvision import transforms
+from .model_utils import build_resnet18, load_checkpoint, get_device
 
-MODEL_PATH = Path("models/resnet18_smoketest.pth")
-
-if len(sys.argv) < 2:
-    print("Usage: python src/predict.py path/to/image.png")
-    sys.exit(1)
-
-image_path = Path(sys.argv[1])
-
-if not image_path.is_file():
-    raise FileNotFoundError(f"Image not found: {image_path}")
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-checkpoint = torch.load(MODEL_PATH, map_location=device, weights_only=True)
-classes = checkpoint["classes"]
-
-model = models.resnet18(weights=None)
-model.fc = nn.Linear(model.fc.in_features, len(classes))
-model.load_state_dict(checkpoint["state_dict"])
-model.to(device)
-model.eval()
-
-transform = transforms.Compose([
-    transforms.Resize((128, 128)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406],
-                         [0.229, 0.224, 0.225]),
-])
-
-image = Image.open(image_path).convert("RGB")
-tensor = transform(image).unsqueeze(0).to(device)
-
-with torch.no_grad():
-    probabilities = torch.softmax(model(tensor), dim=1)[0]
-    index = probabilities.argmax().item()
-
-print("Prediction:", classes[index].upper())
-print(f"Model score: {probabilities[index].item():.2%}")
-print("Note: This smoke-test model is not validated for real-world detection.")
+def main():
+    parser = argparse.ArgumentParser(description="Predict REAL/FAKE for one image with a saved ResNet18.")
+    parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--image", required=True)
+    args = parser.parse_args()
+    device = get_device()
+    model = load_checkpoint(build_resnet18(), args.checkpoint, device)
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    with Image.open(args.image) as im:
+        x = transform(im.convert("RGB")).unsqueeze(0).to(device)
+    with torch.no_grad():
+        probs = torch.softmax(model(x), dim=1)[0]
+    # Training convention used by the project: class index 0=REAL, 1=FAKE.
+    idx = int(probs.argmax().item())
+    labels = ["REAL", "FAKE"]
+    print(f"Prediction: {labels[idx]}")
+    print(f"REAL score: {probs[0].item():.4f}")
+    print(f"FAKE score: {probs[1].item():.4f}")
+if __name__ == "__main__":
+    main()
